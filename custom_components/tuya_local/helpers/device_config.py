@@ -845,7 +845,7 @@ class TuyaDpsConfig:
             try:
                 result = datetime.fromtimestamp(result)
                 replaced = True
-            except Exception:
+            except (ValueError, OSError):
                 _LOGGER.warning("Invalid timestamp %d", result)
 
         if replaced:
