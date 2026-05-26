@@ -30,7 +30,9 @@ async def async_tuya_setup_platform(
             try:
                 data[ecfg.config_id] = entity_class(device, ecfg)
                 entities.append(data[ecfg.config_id])
-            except Exception as e:
+            except ValueError as e:
+                # Only ValueError from entity constructor signals unsupported platform;
+                # let other exceptions propagate
                 _LOGGER.error(
                     "Error adding %s for %s: %s",
                     ecfg.config_id,
