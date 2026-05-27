@@ -117,7 +117,7 @@ class TuyaLocalDevice(object):
                             "tuyadevice": self._api,
                             "tuyadevicelock": self._api_lock,
                         }
-        except Exception as e:
+        except ValueError as e:
             _LOGGER.error(
                 "%s: %s while initialising device %s",
                 type(e).__name__,
