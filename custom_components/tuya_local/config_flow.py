@@ -90,9 +90,13 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
                     if self.cloud.is_authenticated:
                         self.__cloud_devices = await self.cloud.async_get_devices()
                         return await self.async_step_choose_device()
+                except OSError as e:
+                    # Network errors talking to Tuya cloud API
+                    _LOGGER.warning("Cloud connection failed with %s %s", type(e).__name__, e)
+                    _LOGGER.warning("Re-authentication is required.")
                 except Exception as e:
-                    # Re-authentication is needed.
-                    _LOGGER.warning("Connection test failed with %s %s", type(e), e)
+                    # Unexpected errors (AuthError, ValueError, etc.)
+                    _LOGGER.warning("Connection test failed with %s %s", type(e).__name__, e)
                     _LOGGER.warning("Re-authentication is required.")
                 return await self.async_step_cloud()
             if mode == "manual":
@@ -493,9 +497,15 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
                         "Partial cloud device spec:\n%s",
                         log_json(model),
                     )
-            except Exception as e:
+            except OSError as e:
                 _LOGGER.warning(
                     "Unable to fetch data model from cloud: %s %s",
+                    type(e).__name__,
+                    e,
+                )
+            except Exception as e:
+                _LOGGER.warning(
+                    "Unexpected error fetching cloud datamodel: %s %s",
                     type(e).__name__,
                     e,
                 )
@@ -666,8 +676,10 @@ async def async_test_connection(config: dict, hass: HomeAssistant):
                 if device.has_returned_state:
                     retval = device
                     break
+            except OSError as e:
+                _LOGGER.debug("Protocol %s network error: %s %s", proto, type(e).__name__, e)
             except Exception as e:
-                _LOGGER.debug("Protocol %s test failed with %s %s", proto, type(e), e)
+                _LOGGER.debug("Protocol %s test failed with %s %s", proto, type(e).__name__, e)
             if device is not None:
                 device._api.set_socketPersistent(False)
                 if device._api.parent:

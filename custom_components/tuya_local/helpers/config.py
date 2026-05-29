@@ -30,9 +30,17 @@ async def async_tuya_setup_platform(
             try:
                 data[ecfg.config_id] = entity_class(device, ecfg)
                 entities.append(data[ecfg.config_id])
-            except Exception as e:
+            except (TypeError, AttributeError) as e:
+                # Entity constructor raises TypeError for bad config values and AttributeError for missing device properties
                 _LOGGER.error(
                     "Error adding %s for %s: %s",
+                    ecfg.config_id,
+                    cfg.config,
+                    e,
+                )
+            except Exception as e:
+                _LOGGER.error(
+                    "Unexpected error adding %s for %s: %s",
                     ecfg.config_id,
                     cfg.config,
                     e,

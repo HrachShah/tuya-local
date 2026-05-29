@@ -942,7 +942,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         device = await hass.async_add_executor_job(setup_device, hass, config)
         await device.async_refresh()
 
+    except OSError as e:
+        # Network and file I/O errors during device setup
+        cleanup_failed_device(hass, device_id)
+        raise ConfigEntryNotReady("tuya-local device not ready") from e
     except Exception as e:
+        # Unexpected errors (bad config, AttributeError, TypeError, etc.)
         cleanup_failed_device(hass, device_id)
         raise ConfigEntryNotReady("tuya-local device not ready") from e
 
