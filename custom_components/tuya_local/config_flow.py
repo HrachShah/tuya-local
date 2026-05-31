@@ -90,7 +90,7 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
                     if self.cloud.is_authenticated:
                         self.__cloud_devices = await self.cloud.async_get_devices()
                         return await self.async_step_choose_device()
-                except Exception as e:
+                except (OSError, AttributeError, ValueError) as e:
                     # Re-authentication is needed.
                     _LOGGER.warning("Connection test failed with %s %s", type(e), e)
                     _LOGGER.warning("Re-authentication is required.")
@@ -493,7 +493,7 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
                         "Partial cloud device spec:\n%s",
                         log_json(model),
                     )
-            except Exception as e:
+            except (OSError, AttributeError, ValueError) as e:
                 _LOGGER.warning(
                     "Unable to fetch data model from cloud: %s %s",
                     type(e).__name__,
