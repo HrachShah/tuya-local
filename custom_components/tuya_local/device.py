@@ -117,7 +117,7 @@ class TuyaLocalDevice(object):
                             "tuyadevice": self._api,
                             "tuyadevicelock": self._api_lock,
                         }
-        except Exception as e:
+        except (OSError, ValueError, TypeError) as e:
             _LOGGER.error(
                 "%s: %s while initialising device %s",
                 type(e).__name__,
@@ -272,7 +272,7 @@ class TuyaLocalDevice(object):
                         # let entities trigger off poll contents directly
                         try:
                             entity.on_receive(poll, full_poll)
-                        except Exception as e:
+                        except (OSError, ValueError, TypeError) as e:
                             # Don't let exceptions thrown by the entities interrupt the communication loop
                             # Just log them and move on.
                             _LOGGER.exception(
@@ -682,7 +682,7 @@ class TuyaLocalDevice(object):
                     self._api_protocol_working = True
                     self._api_working_protocol_failures = 0
                     return retval
-            except Exception as e:
+            except (OSError, ValueError, TypeError) as e:
                 _LOGGER.debug(
                     "Retrying after exception %s %s (%d/%d)",
                     type(e).__name__,
