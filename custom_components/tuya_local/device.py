@@ -295,13 +295,40 @@ class TuyaLocalDevice(object):
                     )
             _LOGGER.warning("%s receive loop has terminated", self.name)
 
-        except Exception as t:
+        except (OSError, ValueError, RuntimeError, KeyError) as t:
             _LOGGER.exception(
-                "%s receive loop terminated by exception %s", self.name, t
+                "%s receive loop error %s:%s",
+                self.name,
+                type(t).__name__,
+                t,
             )
             self._api.set_socketPersistent(False)
             if self._api.parent:
                 self._api.parent.set_socketPersistent(False)
+
+        except (OSError, ValueError, RuntimeError, KeyError) as t:
+            _LOGGER.exception(
+                "%s receive loop error %s:%s",
+                self.name,
+                type(t).__name__,
+                t,
+            )
+            persist = False
+            self._api.set_socketPersistent(False)
+            if self._api.parent:
+                self._api.parent.set_socketPersistent(False)
+            force_backoff = True
+        finally:
+            if self._api_lock.locked():
+                self._api_lock.release()
+            if not self.has_returned_state:
+                force_backoff = True
+            await asyncio.sleep(5 if force_backoff else 0.1)
+
+        # Close the persistent connection when exiting the loop
+        self._api.set_socketPersistent(False)
+        if self._api.parent:
+            self._api.parent.set_socketPersistent(False)
 
     @property
     def should_poll(self):
