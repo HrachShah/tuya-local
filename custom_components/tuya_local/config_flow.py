@@ -681,7 +681,7 @@ async def async_test_connection(config: dict, hass: HomeAssistant):
             )
             await device.async_refresh()
             retval = device if device.has_returned_state else None
-        except Exception as e:
+        except (OSError, ValueError, RuntimeError, TimeoutError) as e:
             _LOGGER.warning("Connection test failed with %s %s", type(e), e)
 
     if existing and existing.get("device"):
