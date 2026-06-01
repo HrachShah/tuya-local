@@ -117,7 +117,7 @@ class TuyaLocalDevice(object):
                             "tuyadevice": self._api,
                             "tuyadevicelock": self._api_lock,
                         }
-        except Exception as e:
+        except (AttributeError, KeyError, ValueError, TypeError, OSError) as e:
             _LOGGER.error(
                 "%s: %s while initialising device %s",
                 type(e).__name__,
@@ -295,7 +295,7 @@ class TuyaLocalDevice(object):
                     )
             _LOGGER.warning("%s receive loop has terminated", self.name)
 
-        except Exception as t:
+        except (OSError, ValueError, RuntimeError, KeyError, AttributeError) as t:
             _LOGGER.exception(
                 "%s receive loop terminated by exception %s", self.name, t
             )
@@ -426,7 +426,7 @@ class TuyaLocalDevice(object):
                 if self._api.parent:
                     self._api.parent.set_socketPersistent(False)
                 raise
-            except Exception as t:
+            except (OSError, ValueError, RuntimeError, KeyError) as t:
                 _LOGGER.exception(
                     "%s receive loop error %s:%s",
                     self.name,
@@ -682,7 +682,7 @@ class TuyaLocalDevice(object):
                     self._api_protocol_working = True
                     self._api_working_protocol_failures = 0
                     return retval
-            except Exception as e:
+            except (OSError, ValueError, RuntimeError, KeyError) as e:
                 _LOGGER.debug(
                     "Retrying after exception %s %s (%d/%d)",
                     type(e).__name__,

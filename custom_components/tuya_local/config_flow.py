@@ -90,7 +90,7 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
                     if self.cloud.is_authenticated:
                         self.__cloud_devices = await self.cloud.async_get_devices()
                         return await self.async_step_choose_device()
-                except Exception as e:
+                except (OSError, httpx.HTTPError, ValueError) as e:
                     # Re-authentication is needed.
                     _LOGGER.warning("Connection test failed with %s %s", type(e), e)
                     _LOGGER.warning("Re-authentication is required.")
@@ -666,7 +666,7 @@ async def async_test_connection(config: dict, hass: HomeAssistant):
                 if device.has_returned_state:
                     retval = device
                     break
-            except Exception as e:
+            except (OSError, ValueError, RuntimeError, KeyError) as e:
                 _LOGGER.debug("Protocol %s test failed with %s %s", proto, type(e), e)
             if device is not None:
                 device._api.set_socketPersistent(False)
@@ -681,7 +681,7 @@ async def async_test_connection(config: dict, hass: HomeAssistant):
             )
             await device.async_refresh()
             retval = device if device.has_returned_state else None
-        except Exception as e:
+        except (OSError, ValueError, RuntimeError) as e:
             _LOGGER.warning("Connection test failed with %s %s", type(e), e)
 
     if existing and existing.get("device"):
