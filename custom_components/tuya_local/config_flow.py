@@ -493,7 +493,7 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
                         "Partial cloud device spec:\n%s",
                         log_json(model),
                     )
-            except Exception as e:
+            except (OSError, ValueError, KeyError) as e:
                 _LOGGER.warning(
                     "Unable to fetch data model from cloud: %s %s",
                     type(e).__name__,
